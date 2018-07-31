@@ -6,4 +6,6 @@ output:
     toc: false
 ---
 
-Welcome to my research website.
+Just marking down what we did in lab classes.
+
+[Week 2](Week-2.html)
