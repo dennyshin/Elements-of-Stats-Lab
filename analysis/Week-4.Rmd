@@ -1,0 +1,263 @@
+---
+title: "Week-4"
+author: "Denny Shin"
+date: "2018-08-13"
+output: workflowr::wflow_html
+---
+
+```{r "setup", include=FALSE}
+require("knitr")
+opts_knit$set(root.dir = "C:/Users/Denny/Dropbox/Uni/Elements of Statistics/Elements-of-Stats-Lab/")
+```
+
+
+## **Confidence Intervals**
+
+To construct CI we use inverse distribution functions.
+
+```{r}
+p=0.975
+
+qnorm(p)
+qnorm(p, 5, 3) # N(5,3^2)
+qt(p, 5) # t-dist with 5 degrees of freedom
+qchisq(p, 5) # chisq with 5 degrees of freedom
+qf(p, 12, 4) # F dist
+```
+
+To read .txt files:
+
+```{r}
+PTweight <- read.table("data/PTweight.txt")
+```
+
+To find CI:
+
+```{r}
+x <- PTweight[1:5, 2] # control values
+t.test(x, conf.level = 0.9) # 90% CI
+
+y <- PTweight[6:10, 2]
+t.test(x, y, var.equal = TRUE) # two means, unknown sigma, common sigma
+```
+
+Here we assumed that the variance of x and y are common. Is this a reasonable assumption?
+
+```{r}
+var.test(x,y)
+```
+
+Here, the ratio of $\sigma_x$ and $\sigma_y$: $\sigma_x / \sigma_y =1$ is inside the CI. There is not enought evidence to suggest that variances are UNEQUAL. In other words, it IS reasonable to assume that the variances of x and y are common.  
+
+## **Comparing estimators by simulation**
+
+Let's follow the example.
+
+```{r}
+lambda <- 10
+B <- 1000 # simulation no.
+n <- 10 # sample size
+xbar <- 1:B # initialise a vector for xbar and s2
+s2 <- 1:B
+
+for (b in 1:B){
+  x <- rpois(n, lambda) # 10 random samples from poisson
+  xbar[b] <- mean(x)
+  s2[b] <- var(x)
+}
+```
+
+Let's do some statistics:
+
+```{r}
+mean(xbar)
+mean(s2)
+var(xbar)
+var(s2)
+```
+
+Here, we find: $E(\bar{X})$, $E(S^2)$, $var(\bar{X})$, $var(s^2)$
+
+We can clearly see that $\bar{X}$ is the superior estimator. Let's also look at the boxplots:
+
+```{r}
+boxplot(xbar, s2, names = c("X-bar", "S-sqr"), col = "lightblue", horizontal = TRUE)
+
+abline(v = lambda, lty = 2, lwd = 2, col = "magenta") # draw a dashed vertical line
+```
+
+$\bar{X}$ clearly has less spread. They are both centered around 10.
+
+## **Using invadopodia data (not simulation)**
+
+```{r}
+invadopodia <- read.table("data/invadopodia.txt")
+```
+
+Looking at the text file, there are 2 col "Condition" and "Total".
+
+We can much more easily parse through the file without using row numbers like this:
+
+```{r}
+# condition = 1 is no treatment
+x1 <- invadopodia[invadopodia$Condition == 1, 2] # all rows with Condition == 1 and col 2
+x2 <- invadopodia[invadopodia$Condition == 2, 2] # isopropile treatment
+n <- length(x1)
+m <- length(x2)
+xbar1 <- mean(x1)
+xbar2 <- mean(x2)
+```
+
+Recall that using $\bar{X}$ as the estimator for $\lambda$ in Poisson follows $N(\lambda,\lambda/n)$. So we can find 95% CI:
+
+```{r}
+xbar1 + c(-1,1)*1.96*sqrt(xbar1/n)
+xbar2 + c(-1,1)*1.96*sqrt(xbar2/m)
+```
+
+The CI do NOT overlap, meaning that the two means are likely to be different. We can do difference of mean technique like before:
+
+```{r}
+xbar1 - xbar2 +c(-1,1)*1.96*sqrt(xbar1/n + xbar2/m)
+```
+
+Here we see that the CI of the difference of the two estimators does NOT contain zero. So it is reasonable to assume that they have different means.
+
+I tried using z.test() function but it says "could not find function z.test"???
+
+## **Simulating discrete distributions**
+
+We can do simple discrete simulations using the sample() function.
+
+```{r}
+sample(c("tails","heads"), 10, replace=TRUE) # tossing a coin 10 times
+```
+
+The default is to sample WTIHOUT REPLACEMENT, so we need to amend this every time if we want.
+
+Default setting is to give equal probability. We can change this:
+
+```{r}
+sample(c("tails","heads"), 10, prob=c(0.2, 0.8), replace=TRUE)
+```
+
+## **Exercises**
+
+#### **Q1**
+
+This is referring to the invadopodia data.
+
+```{r}
+x3 <- invadopodia[invadopodia$Condition == 3, 2] # propile
+x4 <- invadopodia[invadopodia$Condition == 4, 2] # isopropile and propile
+n <- length(x3)
+m <- length(x4)
+xbar3 <- mean(x3)
+xbar4 <- mean(x4)
+
+# 95% CI for lambda3 and lambda4
+xbar3 + c(-1,1)*1.96*sqrt(xbar3/n)
+xbar4 + c(-1,1)*1.96*sqrt(xbar4/n)
+```
+
+
+#### **Q2**
+
+propile treatment is condition 3 and combo treatment is condition 4. We can compare the means of the two. From Q1 is can guess that the means could be similar since the CIs overlap. To be sure let's do a difference of means calculation.
+
+```{r}
+xbar3 - xbar4 + c(-1,1)*1.96*sqrt(xbar3/n + xbar4/m)
+```
+
+From this analysis we see that zero is NOT included in CI. Therefore, we can say that the means are different but only slightly.
+
+
+#### **Q3**
+
+COX2 data again:
+
+```{r}
+x <- c(10.39, 10.43, 9.99,11.17,8.91,11.20,11.38,7.74,10.61,11.11)
+xbar <- mean(x)
+s <- sd(x)
+```
+
+These are from a normal dist, single mean, unknown $\sigma$. So we use t-dist
+
+```{r}
+t.test(x, conf.level = 0.75)
+```
+
+#### **Q4**
+
+```{r}
+theta = 0.6
+n = 10
+B = 1000 # 1000 simulations
+xbar = 1:B
+s2 = 1:B
+
+for (b in 1:B) {
+  x <- sample(c(0,1,2), n, prob = c(1-theta, 3*theta/4, theta/4), replace = TRUE)
+  xbar[b] <- mean(x)
+  s2[b] <- var(x)
+}
+```
+
+Now, we can see that the expected value for our estimator $\bar{X}$ is:
+
+```{r}
+mean(xbar)
+```
+
+However, if we use $T_1 = 4\bar{X}/5$ 
+
+```{r}
+mean(4*xbar/5)
+```
+
+we can see that this is much less biased. It is safe to say that it is unbiased.
+
+For $T_2$ I first do the indicator function. 
+
+```{r}
+counts <- 1:B
+for (b in 1:B) {
+  x <- sample(c(0,1,2), n, prob = c(1-theta, 3*theta/4, theta/4), replace = TRUE)
+  
+  count <- 0
+  for (i in 1:n) {
+    if (x[i]==0) {
+      count <- count + 1
+    }
+  }
+
+  counts[b] <- count
+  
+  }
+```
+
+We can see that with just the indicator function, its expected value is $10(1-\theta)$
+
+```{r}
+mean(counts)
+```
+
+To adjust, we do:
+
+```{r}
+mean(1-(1/n)*counts)
+```
+
+which is unbiased.
+
+To compare the variances:
+
+```{r}
+((4/5)^2)*var(xbar)
+
+((1/10)^2)*var(counts)
+```
+
+It seems that the $T_2$, using the indicator function, is a better estimator for the pmf.
+

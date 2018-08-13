@@ -1,0 +1,117 @@
+---
+title: "Week-3"
+author: "Denny Shin"
+date: "2018-08-06"
+output: workflowr::wflow_html
+---
+
+## **Working with csv**
+
+To load data
+
+```{r}
+tasmania <- read.csv("data/tasmania.csv")
+```
+
+You can click on the file in the 'environment' tab to view the file.
+
+You can now access tasmania.csv using array notation and built in functions
+```{r}
+dim(tasmania) # check data dimension
+names(tasmania[, 1:5]) # names of first 5 columns
+year <- tasmania[,1] # vector for year
+s1 <- tasmania[,2] # vector for Burnie
+s2 <- tasmania[,3] # vector for Cape Grim
+```
+
+We can start doing analysis!
+
+```{r}
+sd(s1) # standard deviation (of my sample)
+IQR(s1) # interquartile range
+quantile(s1, type=6)
+
+sd(s2, na.rm=TRUE) # this removes missing values, NA
+```
+
+```{r}
+hist(s1, freq=FALSE, xlab="Extreme rainfall (Burnie, Tas", col=8)
+smooth.density = density(s1) # fits a smooth curve
+lines(smooth.density, lty=2, lwd=2, col=2)
+```
+
+In hist() freq=FALSE makes the histogram to show density instead of count. You may also add nclass = or breaks = to control the number of bins.
+
+```{r}
+hist(s1, freq=FALSE, col=8, breaks=15)
+```
+
+boxplot:
+
+```{r}
+boxplot(s1, s2, horizontal = TRUE, names = c("Burnie Is", "Cape Grim"), col=c("yellow", "orange"))
+```
+
+empirical cdfs:
+
+```{r}
+ecdf1 <- ecdf(s1)
+ecdf2 <- ecdf(s2)
+plot(ecdf1)
+plot(ecdf2, col=2, add=TRUE)
+```
+
+qqnorm:
+
+```{r}
+qqnorm(s1, main = "Normal QQ plot for S1")
+qqline(s1)
+```
+
+there is more. do them later
+
+## **Distributions**
+
+## **Maximum likelihood estimation**
+
+Here we use the MASS library and fitdistr function. We are finding the maximum likelihood numerically as many distributions, such as the Gumbel (EV) distribution has no closed form solution.
+
+## **Method of Moments estimation**
+
+
+
+## **Exercises**
+
+##### **Q1**
+
+Find Marrawah, Low Head and Dover:
+
+```{r, eval=FALSE}
+names(tasmania[,1:55])
+```
+
+Marrawah is at 7, Low Head is at 9, Dover is at 30.
+
+```{r}
+sM <- tasmania[,7]
+sLH <- tasmania[,9]
+sD <- tasmania[,30]
+
+summary(sM)
+summary(sLH)
+summary(sD)
+
+sd(sM)
+sd(sLH, na.rm=TRUE)
+sd(sD)
+
+boxplot(sM, sLH, sD, horizontal=TRUE, names=c("Marrawah", "Low Head", "Dover"), col=c("yellow", "orange", "blue"))
+```
+
+#### **Q2**
+
+I consult the help(boxplot) page.
+
+
+
+
